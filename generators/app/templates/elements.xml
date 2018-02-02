@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <ContentType ID="<%= id %>"
+    Name="<%= contentTypeName %>"
+    Group="<%= contentTypeGroup %>"
+    Description="<%= contentTypeDescription %>">
+    <FieldRefs>
+        <!-- PUT YOUR FIELD REFERENCES HERE -->
+        <!-- <FieldRef ID="{ FIELD ID }" /> -->
+    </FieldRefs>
+  </ContentType>
+
+</Elements>
