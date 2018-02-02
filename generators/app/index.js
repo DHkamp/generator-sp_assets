@@ -1,68 +1,37 @@
 const Generator = require("yeoman-generator");
-const uuidv4 = require('uuid/v4');
 
 module.exports = class extends Generator {
     constructor(args, options) {
         super(args, options);
-
-        this.generatorConfig = { };
+        this.operation = '';
     }
     method1() {
         const done = this.async();
 
         this.prompt([
             {
-                type: 'input',
-                name: 'contentTypeName',
-                message: 'ContentType name'
-            },
-            {
-                type: 'input',
-                name: 'contentTypeDescription',
-                message: 'ContentType description'
-            },
-            {
-                type: 'input',
-                name: 'contentTypeGroup',
-                message: 'ContentType group'
-            },
-            {
                 type: 'list',
-                name: 'parentContentType',
-                message: 'Select parent content type',
+                name: 'operation',
+                message: 'Select operation',
                 choices: [
-                    'Element',
-                    'Document',
-                    'Folder'
+                    'Create Column',
+                    'Create ContentType',
+                    'Create List schema'
                 ]
             }
-        ]).then(results => {
-            this.generatorConfig = Object.assign({}, results, {
-                id: this._getContentTypeID(results.parentContentType)
-            });
+        ]).then(result => {
+            this.operation = result.operation;
             done();
         })
     }
     method2() {
-        this.fs.copyTpl(
-            this.templatePath('elements.xml'),
-            this.destinationPath(`${this.generatorConfig.contentTypeName}.elements.xml`),
-            this.generatorConfig
-        )
-    }
-    _getContentTypeID(parent) {
-        let prefix = '';
-        switch(parent) {
-            case 'Element':
-                prefix = '0x01';
+        switch(this.operation) {
+            case 'Create ContentType':
+                this.composeWith('sp_assets:contenttype', {})
                 break;
-            case 'Document':
-                prefix = '0x0101';
-                break;
-            case 'Folder':
-                prefix = '0x0120'
+            default:
+                this.log('Not yet implemented');
                 break;
         }
-        return `${prefix}00${uuidv4().replace(/-/g, '').toUpperCase()}`;
     }
 }
