@@ -27,7 +27,10 @@ module.exports = class extends Generator {
     method2() {
         switch(this.operation) {
             case 'Create ContentType':
-                this.composeWith('sp_assets:contenttype', {})
+                this.composeWith('sp_assets:contenttype', {});
+                break;
+            case 'Create Column':
+                this.composeWith('sp_assets:column', {});
                 break;
             default:
                 this.log('Not yet implemented');

@@ -45,8 +45,8 @@ module.exports = class extends Generator {
     }
     method2() {
         this.fs.copyTpl(
-            this.templatePath('elements.xml'),
-            this.destinationPath(`${this.generatorConfig.contentTypeName}.elements.xml`),
+            this.templatePath('contenttype.xml'),
+            this.destinationPath(`${this.generatorConfig.contentTypeName}.contenttype.xml`),
             this.generatorConfig
         );
     }
