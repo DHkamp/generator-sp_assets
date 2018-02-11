@@ -2,8 +2,10 @@
 <Elements xmlns="http://schemas.microsoft.com/sharepoint/">
     <Field 
         ID="{<%= id %>}"
-        Name="<%= fieldName %>"
+        Name="<%= internalName %>"
         DisplayName="<%= displayName %> "
-        Type="<%= fieldType %>"
-        Group="<%= fieldGroup %>"  />
+        Type="<%= type %>"
+        Required="<%=: required %>"
+        Hidden="<%=: hidden %>"
+        Group="<%= group %>"  />
 </Elements>

@@ -4,32 +4,52 @@ const uuidv4 = require('uuid/v4');
 module.exports = class extends Generator {
     constructor(args, options) {
         super(args, options);
-
-        this.generatorConfig = { };
     }
     method1() {
         const done = this.async();
-
-        this.prompt([
+        this._promptColumnData()
+            .then(results => Object.assign({}, { id: uuidv4().toUpperCase() }, results))
+            .then(column => {
+                console.log('Defining column template');
+                const template = (column.type === 'Choice' || column.type === 'MultiChoice') ? 'column.choice.xml' : 'column.default.xml';
+                return Object.assign({}, column, { template });
+            })
+            .then(column => {
+                if ((column.type === 'Choice' || column.type === 'MultiChoice')) {
+                    return this._promptChoices(column);
+                }
+                return column;
+            })
+            // Copy template with provided data
+            .then(column => {
+                console.log('Creating column markup file');
+                this.fs.copyTpl(
+                    this.templatePath(column.template),
+                    this.destinationPath(`${column.internalName}.column.xml`),
+                    column
+                );
+            })
+            .catch(err => {
+                console.error(err);
+            });
+            done()
+    }
+    _promptColumnData() {
+        return this.prompt([
             {
                 type: 'input',
                 name: 'displayName',
-                message: 'Fieldname display'
+                message: 'Set the columns display name'
             },
             {
                 type: 'input',
-                name: 'fieldName',
-                message: 'Fieldname internal'
-            },
-            {
-                type: 'input',
-                name: 'fieldGroup',
-                message: 'Field group'
+                name: 'internalName',
+                message: 'Set the columns internal name'
             },
             {
                 type: 'list',
-                name: 'fieldType',
-                message: 'Select field type',
+                name: 'type',
+                message: 'Set the columns type',
                 choices: [
                     'Text',
                     'URL',
@@ -39,45 +59,34 @@ module.exports = class extends Generator {
                     'Choice',
                     'MultiChoice'
                 ]
-            }
-        ]).then(results => {
-            this.generatorConfig = Object.assign({}, results, {
-                id: this._getFieldID(results.parentContentType)
-            });
-
-            if (this.generatorConfig.fieldType === 'Choice' || this.generatorConfig.fieldType ===  'MultiChoice') {
-                this._getChoices();
-            } else {
-                this._createFromTemplate('column.default.xml')
-            }
-            done();
-        })
+            },
+            {
+                type: 'input',
+                name: 'group',
+                message: 'Set the columns group name'
+            },
+            {
+                type: 'confirm',
+                name: 'hidden',
+                message: 'Is this column hidden?',
+            },
+            {
+                type: 'confirm',
+                name: 'required',
+                message: 'Is this column required?'
+            },
+        ]);
     }
-    _getChoices() {
-        const done = this.async();
-
-        this.prompt([
+    _promptChoices(column) {
+        return this.prompt([
             {
                 type: 'input',
                 name: 'choices',
                 message: 'Selectable choices (comma-separated)'
             }
-        ]).then(result => {
-            this.generatorConfig = Object.assign({}, this.generatorConfig, {
-                choices: result.choices.split(',')
-            });
-            this._createFromTemplate('column.choice.xml')
-            done();
+        ])
+        .then(results => {
+            return Object.assign({}, column, { choices: results.choices.split(',') });
         });
-    }
-    _createFromTemplate(template) {
-        this.fs.copyTpl(
-            this.templatePath(template),
-            this.destinationPath(`${this.generatorConfig.fieldName}.column.xml`),
-            this.generatorConfig
-        );
-    }
-    _getFieldID() {
-        return uuidv4().toUpperCase();
     }
 }

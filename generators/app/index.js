@@ -15,8 +15,7 @@ module.exports = class extends Generator {
                 message: 'Select operation',
                 choices: [
                     'Create Column',
-                    'Create ContentType',
-                    'Create List schema'
+                    'Create ContentType'
                 ]
             }
         ]).then(result => {
