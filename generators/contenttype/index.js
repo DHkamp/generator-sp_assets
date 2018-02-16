@@ -4,31 +4,45 @@ const uuidv4 = require('uuid/v4');
 module.exports = class extends Generator {
     constructor(args, options) {
         super(args, options);
-
-        this.generatorConfig = { };
     }
     method1() {
         const done = this.async();
 
-        this.prompt([
+        this._promptContentTypeData()
+            .then(this._addContentTypeId)
+            .then(contentType => {
+                console.log('Creating contenttype markup file');
+                this.fs.copyTpl(
+                    this.templatePath('contenttype.xml'),
+                    this.destinationPath(`${contentType.name}.contenttype.xml`),
+                    contentType
+                );
+            })
+            .catch(err => {
+                console.error(err);
+            });
+            done()
+    }
+    _promptContentTypeData() {
+        return this.prompt([
             {
                 type: 'input',
-                name: 'contentTypeName',
+                name: 'name',
                 message: 'ContentType name'
             },
             {
                 type: 'input',
-                name: 'contentTypeDescription',
+                name: 'description',
                 message: 'ContentType description'
             },
             {
                 type: 'input',
-                name: 'contentTypeGroup',
+                name: 'group',
                 message: 'ContentType group'
             },
             {
                 type: 'list',
-                name: 'parentContentType',
+                name: 'parent',
                 message: 'Select parent content type',
                 choices: [
                     'Element',
@@ -36,23 +50,11 @@ module.exports = class extends Generator {
                     'Folder'
                 ]
             }
-        ]).then(results => {
-            this.generatorConfig = Object.assign({}, results, {
-                id: this._getContentTypeID(results.parentContentType)
-            });
-            done();
-        })
+        ]);
     }
-    method2() {
-        this.fs.copyTpl(
-            this.templatePath('contenttype.xml'),
-            this.destinationPath(`${this.generatorConfig.contentTypeName}.contenttype.xml`),
-            this.generatorConfig
-        );
-    }
-    _getContentTypeID(parent) {
+    _addContentTypeId(contentType) {
         let prefix = '';
-        switch(parent) {
+        switch (contentType.parent) {
             case 'Element':
                 prefix = '0x01';
                 break;
@@ -63,6 +65,6 @@ module.exports = class extends Generator {
                 prefix = '0x0120'
                 break;
         }
-        return `${prefix}00${uuidv4().replace(/-/g, '').toUpperCase()}`;
+        return Object.assign({}, contentType, { id: `${prefix}00${uuidv4().replace(/-/g, '').toUpperCase()}` });
     }
 }
